@@ -44,7 +44,7 @@ If it passes, return ok: true and no failures.
 Otherwise return one failure per file that needs changing (a failing test belongs to the source file it exercises when the test is correct).
 Copy the relevant error lines into details verbatim. Format-check failures go under the file the formatter named.
 Don't change any files.`,
-    { label: `check round ${round}`, schema: STATUS, effort: 'low' },
+    { agentType: 'devkit:runner', label: `check round ${round}`, schema: STATUS, effort: 'low' },
   )
 
 const history = []

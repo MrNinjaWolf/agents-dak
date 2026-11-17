@@ -47,6 +47,8 @@ LANG_EXT = {
 }
 EXT_LANG = {ext: lang for lang, exts in LANG_EXT.items() for ext in exts}
 KINDS = ["format", "format-check", "lint", "build", "test"]
+# The interpreter running devkit; "python3" doesn't exist on many Windows installs.
+PY = f'"{sys.executable}"' if " " in sys.executable else (sys.executable or "python3")
 
 
 def has(tool: str) -> bool:
@@ -189,8 +191,8 @@ def python_cmds(dirp: Path) -> dict:
         format=["ruff format ."] if has("ruff") else (["black ."] if has("black") else []),
         format_check=["ruff format --check ."] if has("ruff") else (["black --check ."] if has("black") else []),
         lint=(["ruff check ."] if has("ruff") else []) + (["mypy ."] if has("mypy") and (dirp / "mypy.ini").exists() else []),
-        build=["python3 -m compileall -q ."],
-        test=(["python3 -m pytest -q"] if importlib.util.find_spec("pytest") else ["python3 -m unittest discover -q"]) if tests else [],
+        build=[f"{PY} -m compileall -q ."],
+        test=([f"{PY} -m pytest -q"] if importlib.util.find_spec("pytest") else [f"{PY} -m unittest discover -q"]) if tests else [],
     )
 
 
@@ -217,6 +219,15 @@ def loose_cmds(lang: str, dirp: Path, files: list[str]) -> dict | None:
     return None
 
 
+def shell_cmd(c: str) -> dict:
+    """Commands are written for a POSIX shell. On Windows, use Git Bash when present."""
+    if os.name == "nt":
+        bash = shutil.which("bash")
+        if bash:
+            return {"args": [bash, "-c", c], "shell": False}
+    return {"args": c, "shell": True}
+
+
 def run(kind: str, root: Path, lang: str | None) -> int:
     info = detect(root)
     kinds = ["format-check", "lint", "build", "test"] if kind == "check" else [kind]
@@ -228,7 +239,8 @@ def run(kind: str, root: Path, lang: str | None) -> int:
         for k in kinds:
             for c in proj["commands"].get(k, []):
                 try:
-                    r = subprocess.run(c, shell=True, cwd=cwd, capture_output=True, text=True, timeout=900, check=False)
+                    sc = shell_cmd(c)
+                    r = subprocess.run(sc["args"], shell=sc["shell"], cwd=cwd, capture_output=True, text=True, timeout=900, check=False)
                     code, out = r.returncode, (r.stdout + r.stderr)
                 except subprocess.TimeoutExpired:
                     code, out = 124, "timed out after 900s"

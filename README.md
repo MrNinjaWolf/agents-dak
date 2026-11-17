@@ -2,22 +2,42 @@
 
 **devkit** is a Claude Code plugin with multi-agent workflows for developing, styling, fine-tuning and bug-hunting in any language. You install it once and it's available in every project.
 
-## Install (one command)
+## Install
 
-Run this in any Claude Code chat (CLI, desktop, IDE or web):
+Pick whichever app you use. Both install the same plugin.
+
+### Option A: claude.ai or the Claude desktop app (no terminal)
+
+1. Go to **Customize > Plugins** ([claude.ai/customize/plugins](https://claude.ai/customize/plugins), or **Customize** in the desktop app).
+2. Select **Add**, then **Add marketplace**, and enter `MrNinjaWolf/agents-dak`.
+3. Find **devkit** in the list and select **Add**.
+
+The plugin is saved to your account. It works in Cowork and in Claude Code (run `/reload-plugins`, or start a new session). Chat only gets its skill; the agents and workflows need Cowork or Claude Code.
+
+### Option B: inside Claude Code
+
+Claude Code means the terminal app, an IDE extension, or the desktop app's **Code** tab. Type:
 
 ```text
 /plugin install devkit --marketplace MrNinjaWolf/agents-dak
 ```
 
-On Claude Code versions older than 2.1.275, use two steps:
+On Claude Code versions older than 2.1.275, use two steps instead: `/plugin marketplace add MrNinjaWolf/agents-dak`, then `/plugin install devkit@agents-dak`.
 
-```text
-/plugin marketplace add MrNinjaWolf/agents-dak
-/plugin install devkit@agents-dak
+To get updates, open `/plugin`, go to **Marketplaces**, choose **agents-dak**, and select **Update** (or turn on auto-update).
+
+### Requirements
+
+- **Python 3.8 or newer** for the toolchain helper.
+- **Git** for Claude Code installs.
+
+On Windows, install all three from PowerShell, then close and reopen it:
+
+```powershell
+winget install --id Git.Git -e
+winget install --id Python.Python.3.12 -e
+irm https://claude.ai/install.ps1 | iex
 ```
-
-That's it. Every session now has the `/devkit:*` commands, the six agents, and the `devkit` toolchain helper. To get updates, open `/plugin`, go to Marketplaces, choose agents-dak, then Update. You can also turn on auto-update there.
 
 ### Make it automatic for everyone on a project
 
@@ -88,7 +108,7 @@ Run /devkit:bug-hunt with path "server", focus "missing auth checks, SQL/NoSQL i
 Run /devkit:bug-hunt with path "client/src", focus "XSS, stale state, effects with wrong dependencies, unhandled promise rejections, out-of-order fetches"
 ```
 
-`devkit detect .` reads the `lint`, `test`, `build`, `typecheck` and `format` scripts from your `package.json`. The bug hunt reads code; it doesn't click through the running site. For bugs that only show up in the browser, ask Claude to start the dev server and walk through your main flows with Playwright.
+The devkit helper reads the `lint`, `test`, `build`, `typecheck` and `format` scripts from your `package.json`. The bug hunt reads code; it doesn't click through the running site. For bugs that only show up in the browser, ask Claude to start the dev server and walk through your main flows with Playwright.
 
 ## Agents
 
@@ -100,22 +120,24 @@ You can ask for any of these by name, without running a workflow:
 - `devkit:stylist`
 - `devkit:perf-tuner`
 - `devkit:reviewer`
+- `devkit:runner` (the general helper the workflows use for setup and reporting steps)
 
 For example: "Use the devkit:skeptic agent to check whether the null check in cache.go:88 is really a bug."
 
 ## Toolchain helper
 
-The plugin puts `devkit` on the Bash `PATH`, so you and the agents get one interface for every language:
+The plugin ships `scripts/devkit`, which gives the agents one interface for every language: Python, JS/TS, Go, Rust, Java/Kotlin, C/C++, C#, Ruby and shell. The agents find it on their own. You can also just ask Claude, for example "run devkit check on this repo".
+
+From a clone of this repo, you can run it yourself:
 
 ```bash
-devkit detect .                  # languages, projects, commands (missing tools listed)
-devkit run check .               # format-check + lint + build + test, JSON result
-devkit run test . --lang go
-devkit run format src
-devkit slices . --max-lines 1500
+plugins/devkit/scripts/devkit detect .        # languages, projects, commands (missing tools listed)
+plugins/devkit/scripts/devkit run check .     # format-check + lint + build + test, JSON result
+plugins/devkit/scripts/devkit run test . --lang go
+plugins/devkit/scripts/devkit slices . --max-lines 1500
 ```
 
-It covers Python, JS/TS, Go, Rust, Java/Kotlin, C/C++, C#, Ruby and shell.
+On Windows CMD or PowerShell, use `plugins\devkit\scripts\devkit.cmd` instead.
 
 ## Benchmark
 
@@ -139,7 +161,8 @@ After a run with `fix true`, reset with `git checkout -- playground`.
 | `plugins/devkit/workflows/` | Workflow scripts |
 | `plugins/devkit/agents/` | Agent roles |
 | `plugins/devkit/skills/devkit/` | Skill that teaches Claude when to use what |
-| `plugins/devkit/bin/devkit` | Toolchain helper (Python, stdlib only) |
+| `plugins/devkit/scripts/devkit.py` | Toolchain helper (Python 3.8+, stdlib only) |
+| `plugins/devkit/scripts/devkit`, `devkit.cmd` | Launchers for macOS/Linux/Git Bash and Windows CMD/PowerShell. The plugin has no top-level `bin/` because claude.ai rejects plugins that have one. |
 | `scripts/dry-run-workflow.mjs` | Runs a workflow with fake agents, so testing costs no tokens |
 
 ```bash
@@ -155,10 +178,10 @@ Bump `version` in `plugins/devkit/.claude-plugin/plugin.json` when you publish c
 Add these rules to your user or project settings:
 
 ```json
-{ "permissions": { "allow": ["Bash(devkit:*)", "Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)"] } }
+{ "permissions": { "allow": ["Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)"] } }
 ```
 
-`devkit run` executes the project's own scripts (`npm run test`, `make`, and so on), so only allow it in repos you trust.
+When an agent first runs the devkit helper, choose "don't ask again" to approve it for the rest of the session. `devkit run` executes the project's own scripts (`npm run test`, `make`, and so on), so only allow it in repos you trust.
 
 ## Cost
 

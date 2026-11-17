@@ -24,14 +24,14 @@ files per language. Write a concise style guide (max 40 bullet lines, grouped by
 comments, file/function size, and idioms the code already follows. Note where the code is inconsistent and which variant dominates.
 ${opts.guide ? `The user also wants: ${opts.guide}` : ''}
 Return only the guide. Don't change files.`,
-  { label: 'house style', effort: 'medium' },
+  { agentType: 'devkit:runner', label: 'house style', effort: 'medium' },
 )
 
 phase('Format')
 await agent(
   `Run \`devkit run format ${root}\`. If a formatter is missing, skip it and say which.
 Then run \`git diff --stat\` and report which files the formatters touched. Don't make any manual edits.`,
-  { label: 'run formatters', effort: 'low' },
+  { agentType: 'devkit:runner', label: 'run formatters', effort: 'low' },
 )
 
 const SLICES = {
@@ -41,7 +41,7 @@ const SLICES = {
 }
 const mapped = await agent(
   `Run \`devkit slices ${root} --max-lines ${maxLines}\` and return its slices unchanged, minus generated/vendored files.`,
-  { label: 'map slices', schema: SLICES, effort: 'low' },
+  { agentType: 'devkit:runner', label: 'map slices', schema: SLICES, effort: 'low' },
 )
 const slices = mapped?.slices ?? []
 

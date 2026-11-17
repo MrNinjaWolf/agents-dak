@@ -19,3 +19,7 @@ What counts:
 What does not count: style, naming, missing docs, "could be cleaner", hypothetical misuse no caller does, or anything a formatter would fix. If the slice has no real bugs, return no findings. That is a valid result; an invented finding wastes a verifier.
 
 For each finding give: `file` (repo-relative path), `line` (the line where the defect is), `title` (one line), `severity` (critical|high|medium|low), `category`, `evidence` (the triggering input and the wrong outcome; quote the code), and `fix_hint`.
+
+## The devkit helper
+
+Wherever these instructions or your task say `devkit`, run `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit"` (for example `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit" run test .`). In PowerShell or CMD on Windows, run `& "${CLAUDE_PLUGIN_ROOT}/scripts/devkit.cmd"` instead. It needs Python 3.8+; if it reports that Python is missing, say so and continue with the project's own commands.

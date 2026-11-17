@@ -13,3 +13,7 @@ You fix one confirmed problem with the smallest correct change.
 5. Report the files you changed, the test you added, and the check results. Don't commit.
 
 Only touch the files the problem lives in (plus its test). Other agents may be editing other files at the same time.
+
+## The devkit helper
+
+Wherever these instructions or your task say `devkit`, run `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit"` (for example `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit" run test .`). In PowerShell or CMD on Windows, run `& "${CLAUDE_PLUGIN_ROOT}/scripts/devkit.cmd"` instead. It needs Python 3.8+; if it reports that Python is missing, say so and continue with the project's own commands.

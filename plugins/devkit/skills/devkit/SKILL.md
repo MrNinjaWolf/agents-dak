@@ -7,7 +7,7 @@ description: How to check, lint, format, build, test, bug-hunt, restyle or perfo
 
 ## The `devkit` command
 
-`devkit` is on the Bash `PATH` while this plugin is enabled. Use it instead of guessing a project's commands:
+The helper lives at `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit"`. In PowerShell or CMD on Windows, use `& "${CLAUDE_PLUGIN_ROOT}/scripts/devkit.cmd"`. It needs Python 3.8 or newer. Below, `devkit` stands for that path. Use it instead of guessing a project's commands:
 
 - `devkit detect [dir]`: lists the languages and projects under `dir`, with each project's format, lint, build and test commands. Tools that aren't installed appear under `missing_tools`.
 - `devkit run <format|format-check|lint|build|test|check> [dir] [--lang L]`: runs those commands and prints a JSON result. It exits 0 only if every command passed. `check` runs format-check, lint, build and test in that order.
@@ -37,5 +37,6 @@ Use these agents directly for smaller jobs:
 - `devkit:fixer`
 - `devkit:stylist`
 - `devkit:perf-tuner`
+- `devkit:runner` (general helper for workflow steps)
 
 Before reporting or fixing a claimed bug, have a skeptic check it.

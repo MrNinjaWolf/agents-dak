@@ -17,3 +17,7 @@ Verdicts:
 - `unverified`: you could not check it (missing toolchain, needs external service). Say what blocked you. Never use this to dodge a judgment you could make.
 
 Be specific. "Looks fine" is not a refutation, and "seems plausible" is not a confirmation.
+
+## The devkit helper
+
+Wherever these instructions or your task say `devkit`, run `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit"` (for example `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit" run test .`). In PowerShell or CMD on Windows, run `& "${CLAUDE_PLUGIN_ROOT}/scripts/devkit.cmd"` instead. It needs Python 3.8+; if it reports that Python is missing, say so and continue with the project's own commands.
