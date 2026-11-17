@@ -9,7 +9,8 @@ This repo is a Claude Code **plugin marketplace**. Its only plugin is `devkit`, 
   - `agents/`: six agents. They load as `devkit:<name>`.
   - `workflows/`: five workflows. They run as `/devkit:<name>`.
   - `skills/devkit/SKILL.md`
-  - `bin/devkit`: the toolchain helper. It is on the Bash `PATH` while the plugin is enabled.
+  - `scripts/devkit.py`: the toolchain helper.
+  - `bin/devkit` and `bin/devkit.cmd`: launchers that find Python 3. They are on the shell `PATH` while the plugin is enabled.
 - `scripts/dry-run-workflow.mjs`: tests a workflow with fake agents.
 - `scripts/score.py` and `playground/`: the bug-hunt benchmark.
 
@@ -21,7 +22,7 @@ Don't guess a project's commands. Use these:
 - `devkit run <format|format-check|lint|build|test|check> <dir> [--lang L]`: runs those commands and prints a JSON result. It exits 0 only if everything passed.
 - `devkit slices <dir> --max-lines N`: splits the source files into chunks for parallel agents.
 
-If you work in this repo without the plugin installed, run `plugins/devkit/bin/devkit` instead. If a language isn't detected, add it to `detect()` or `loose_cmds()` in that file. Don't hard-code commands anywhere else.
+If you work in this repo without the plugin installed, run `plugins/devkit/bin/devkit` instead. If a language isn't detected, add it to `detect()` or `loose_cmds()` in `plugins/devkit/scripts/devkit.py`. Don't hard-code commands anywhere else.
 
 ## Editing agents and workflows
 

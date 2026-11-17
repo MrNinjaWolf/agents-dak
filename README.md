@@ -10,6 +10,18 @@ Run this in any Claude Code chat (CLI, desktop, IDE or web):
 /plugin install devkit --marketplace MrNinjaWolf/agents-dak
 ```
 
+You need Claude Code itself (the terminal app, an IDE extension, or the desktop app's Code tab), plus Git and Python 3.8 or newer.
+
+**On Windows**, run this in PowerShell first:
+
+```powershell
+winget install --id Git.Git -e
+winget install --id Python.Python.3.12 -e
+irm https://claude.ai/install.ps1 | iex
+```
+
+Then close and reopen PowerShell, run `claude`, log in, and type the install command above.
+
 On Claude Code versions older than 2.1.275, use two steps:
 
 ```text
@@ -139,7 +151,8 @@ After a run with `fix true`, reset with `git checkout -- playground`.
 | `plugins/devkit/workflows/` | Workflow scripts |
 | `plugins/devkit/agents/` | Agent roles |
 | `plugins/devkit/skills/devkit/` | Skill that teaches Claude when to use what |
-| `plugins/devkit/bin/devkit` | Toolchain helper (Python, stdlib only) |
+| `plugins/devkit/scripts/devkit.py` | Toolchain helper (Python 3.8+, stdlib only) |
+| `plugins/devkit/bin/` | `devkit` launchers for macOS/Linux/Git Bash and Windows CMD/PowerShell |
 | `scripts/dry-run-workflow.mjs` | Runs a workflow with fake agents, so testing costs no tokens |
 
 ```bash
