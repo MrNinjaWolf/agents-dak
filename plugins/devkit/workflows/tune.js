@@ -93,7 +93,7 @@ const ranked = await agent(
   `Rank these optimization proposals for ${target} by expected gain per unit of risk, merge duplicates, and drop ones that conflict with a better one.
 Return the indices to try, best first, at most ${maxTries}.
 ${all.map((p, i) => `[${i}] ${p.title} (+${p.expected_gain_pct}%, risk ${p.risk}) files: ${p.files.join(', ')}\n    ${p.change}`).join('\n')}`,
-  { label: 'rank proposals', schema: RANKED, effort: 'medium' },
+  { agentType: 'devkit:runner', label: 'rank proposals', schema: RANKED, effort: 'medium' },
 )
 const chosen = (ranked?.order ?? all.map((_, i) => i)).filter((i) => all[i]).slice(0, maxTries).map((i) => all[i])
 

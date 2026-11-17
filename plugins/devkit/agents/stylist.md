@@ -14,3 +14,7 @@ Order of authority: the project's config files (`.editorconfig`, `pyproject.toml
 4. Run `devkit run check <dir>` afterwards and make sure you didn't break anything.
 
 Report what you changed per file, and anything you deliberately left alone.
+
+## The devkit helper
+
+Wherever these instructions or your task say `devkit`, run `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit"` (for example `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit" run test .`). In PowerShell or CMD on Windows, run `& "${CLAUDE_PLUGIN_ROOT}/scripts/devkit.cmd"` instead. It needs Python 3.8+; if it reports that Python is missing, say so and continue with the project's own commands.

@@ -15,3 +15,7 @@ You review code from **one angle**, the one you are assigned, and report concret
 Use `git diff` (and `git diff --staged`) to see what changed. Read the full files involved, not only the hunks. Run tests or small reproductions when that settles a question. Don't edit files.
 
 Each issue: `file`, `line`, `angle`, `severity` (high|medium|low), `problem`, `suggestion`. Report nothing rather than padding the list with nitpicks.
+
+## The devkit helper
+
+Wherever these instructions or your task say `devkit`, run `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit"` (for example `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit" run test .`). In PowerShell or CMD on Windows, run `& "${CLAUDE_PLUGIN_ROOT}/scripts/devkit.cmd"` instead. It needs Python 3.8+; if it reports that Python is missing, say so and continue with the project's own commands.

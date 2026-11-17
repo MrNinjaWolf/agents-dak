@@ -6,11 +6,12 @@ This repo is a Claude Code **plugin marketplace**. Its only plugin is `devkit`, 
 
 - `.claude-plugin/marketplace.json`: the marketplace catalog.
 - `plugins/devkit/`: the plugin itself.
-  - `agents/`: six agents. They load as `devkit:<name>`.
+  - `agents/`: seven agents. They load as `devkit:<name>`.
   - `workflows/`: five workflows. They run as `/devkit:<name>`.
   - `skills/devkit/SKILL.md`
   - `scripts/devkit.py`: the toolchain helper.
-  - `bin/devkit` and `bin/devkit.cmd`: launchers that find Python 3. They are on the shell `PATH` while the plugin is enabled.
+  - `scripts/devkit` and `scripts/devkit.cmd`: launchers that find Python 3. Agents and the skill reach them through `${CLAUDE_PLUGIN_ROOT}/scripts/devkit`.
+  - There is no top-level `bin/`: claude.ai rejects plugins that have one, so don't add it back.
 - `scripts/dry-run-workflow.mjs`: tests a workflow with fake agents.
 - `scripts/score.py` and `playground/`: the bug-hunt benchmark.
 
@@ -22,7 +23,7 @@ Don't guess a project's commands. Use these:
 - `devkit run <format|format-check|lint|build|test|check> <dir> [--lang L]`: runs those commands and prints a JSON result. It exits 0 only if everything passed.
 - `devkit slices <dir> --max-lines N`: splits the source files into chunks for parallel agents.
 
-If you work in this repo without the plugin installed, run `plugins/devkit/bin/devkit` instead. If a language isn't detected, add it to `detect()` or `loose_cmds()` in `plugins/devkit/scripts/devkit.py`. Don't hard-code commands anywhere else.
+In this repo, run `plugins/devkit/scripts/devkit`. Every agent that workflows spawn must have an `agentType` (use `devkit:runner` for generic steps), because only plugin agents know the helper's path. If a language isn't detected, add it to `detect()` or `loose_cmds()` in `plugins/devkit/scripts/devkit.py`. Don't hard-code commands anywhere else.
 
 ## Editing agents and workflows
 

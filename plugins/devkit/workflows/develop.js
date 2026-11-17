@@ -66,7 +66,7 @@ const plans = await pipeline(angles, (angle) =>
 Project root: ${root}. Run \`devkit detect ${root}\` to see languages and commands.
 Plan the implementation from this angle: ${angle}.
 Read the relevant code first. Name concrete files, functions and tests. Don't edit anything.`,
-    { label: `plan: ${angle.split(':')[0]}`, schema: PLAN, disallowedTools: READ_ONLY },
+    { agentType: 'devkit:runner', label: `plan: ${angle.split(':')[0]}`, schema: PLAN, disallowedTools: READ_ONLY },
   ),
 )
 
@@ -77,7 +77,7 @@ Three candidate plans (JSON):
 ${JSON.stringify(plans.filter(Boolean), null, 1)}
 Pick the best one and fold in any strictly better ideas from the others (especially missing edge cases and tests).
 Check claims against the code where they disagree. Return a single plan. Don't edit anything.`,
-  { label: 'merge plans', schema: PLAN, disallowedTools: READ_ONLY },
+  { agentType: 'devkit:runner', label: 'merge plans', schema: PLAN, disallowedTools: READ_ONLY },
 )
 if (!plan) return { error: 'planning failed' }
 log(plan.summary)
@@ -92,7 +92,7 @@ Risks to handle: ${(plan.risks ?? []).join('; ') || 'none listed'}
 
 Match the surrounding code style. Write the tests with the project's existing framework. Run
 \`devkit run check ${root}\` and get it passing. Don't commit. Report the files you changed.`,
-  { label: 'implement' },
+  { agentType: 'devkit:runner', label: 'implement' },
 )
 
 phase('Review')

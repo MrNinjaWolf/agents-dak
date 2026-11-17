@@ -1,6 +1,6 @@
 #!/bin/sh
 # devkit launcher (macOS, Linux, Git Bash on Windows): finds a working Python 3.
-script="$(cd "$(dirname "$0")/.." && pwd)/scripts/devkit.py"
+script="$(cd "$(dirname "$0")" && pwd)/devkit.py"
 for py in python3 python; do
   # The version check also skips the Windows Store "python" stub, which fails here.
   if command -v "$py" >/dev/null 2>&1 && "$py" -c "import sys; sys.exit(sys.version_info < (3, 8))" >/dev/null 2>&1; then

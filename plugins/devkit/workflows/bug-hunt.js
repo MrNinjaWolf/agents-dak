@@ -75,7 +75,7 @@ const mapped = await agent(
   `Run \`devkit slices ${root} --max-lines ${maxLines}\` and return its slices.
 Drop slices that contain only generated, vendored, minified, or fixture/data files. Keep test files only if they contain real logic.
 Return the file paths exactly as the script printed them (relative to ${root}). Do not read the files.`,
-  { label: 'map slices', schema: SLICES, effort: 'low' },
+  { agentType: 'devkit:runner', label: 'map slices', schema: SLICES, effort: 'low' },
 )
 const slices = (mapped?.slices ?? []).filter((s) => s.files.length > 0)
 log(`${slices.length} slices under ${root}`)
@@ -173,7 +173,7 @@ ${JSON.stringify(result)}
 2. ${outDir}/report.md: a short human report. Title, one-line totals (slices, claimed, confirmed, disputed, refuted, unverified),
 then a table of confirmed bugs ordered by severity (file:line, title, severity), then disputed ones with both sides in one line each,
 then a "Fix log" section if fixes is non-empty. No other commentary.`,
-  { label: 'write report', effort: 'low' },
+  { agentType: 'devkit:runner', label: 'write report', effort: 'low' },
 )
 
 return {

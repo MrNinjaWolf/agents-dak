@@ -12,3 +12,7 @@ You fine-tune code against a metric (latency, throughput, memory, binary size, a
 4. When asked to apply, make one change at a time, re-run the tests (`devkit run test <dir>`) and the benchmark, and keep the change only if the tests pass and the gain beats the noise. Otherwise revert it.
 
 Report the baseline, each attempt with its numbers, and what was kept.
+
+## The devkit helper
+
+Wherever these instructions or your task say `devkit`, run `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit"` (for example `"${CLAUDE_PLUGIN_ROOT}/scripts/devkit" run test .`). In PowerShell or CMD on Windows, run `& "${CLAUDE_PLUGIN_ROOT}/scripts/devkit.cmd"` instead. It needs Python 3.8+; if it reports that Python is missing, say so and continue with the project's own commands.
