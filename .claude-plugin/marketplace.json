@@ -1,0 +1,14 @@
+{
+  "name": "agents-dak",
+  "description": "Multi-agent Claude Code workflows for bug hunting, fixing, styling, tuning and feature work in any language",
+  "owner": {
+    "name": "MrNinjaWolf"
+  },
+  "plugins": [
+    {
+      "name": "devkit",
+      "source": "./plugins/devkit",
+      "description": "Multi-agent workflows for bug hunting, fixing, styling, tuning and developing in any language"
+    }
+  ]
+}

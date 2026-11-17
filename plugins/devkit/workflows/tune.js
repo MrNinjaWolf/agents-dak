@@ -68,7 +68,7 @@ const base = await agent(
 Build a repeatable benchmark for the target. Prefer the project's own benchmark tooling; otherwise write a small harness under reports/tune/
 (that directory is fine to create). The benchmark command must run from the repo root and print the measured value.
 Run it at least 5 times, report the median and the spread, and profile once to list the top hotspots. Don't change source code.`,
-  { agentType: 'perf-tuner', label: 'baseline', schema: BASELINE },
+  { agentType: 'devkit:perf-tuner', label: 'baseline', schema: BASELINE },
 )
 if (!base) return { error: 'baseline failed' }
 log(`baseline: ${base.median} ${base.unit} (±${base.spread_pct ?? '?'}%) via ${base.bench_command}`)
@@ -81,7 +81,7 @@ Hotspots: ${(base.hotspots ?? []).join('; ') || 'unknown'}
 Angle: ${angle}.
 Propose up to 3 changes from this angle only. Read the code and you may experiment on copies under /tmp, but don't edit project files.
 Every proposal must keep behavior identical.`,
-    { agentType: 'perf-tuner', label: `propose: ${angle.split(' ')[0]}`, schema: PROPOSALS },
+    { agentType: 'devkit:perf-tuner', label: `propose: ${angle.split(' ')[0]}`, schema: PROPOSALS },
   ),
 )
 const all = proposed.filter(Boolean).flatMap((p) => p.proposals)
@@ -109,9 +109,9 @@ Files: ${p.files.join(', ')}
 Change: ${p.change}
 
 Before editing, copy each file to /tmp/tune-backup/ so you can restore it. Apply the change, run the tests
-(\`python3 scripts/toolchain.py run test\` on the affected project) and the benchmark 5 times.
+(\`devkit run test\` on the affected project) and the benchmark 5 times.
 Keep the change only if tests pass and the median improves by more than the noise; otherwise restore the backups exactly.`,
-    { agentType: 'perf-tuner', label: `apply: ${p.title}`, schema: TRY },
+    { agentType: 'devkit:perf-tuner', label: `apply: ${p.title}`, schema: TRY },
   )
   tries.push({ title: p.title, ...(t ?? { kept: false, note: 'agent failed' }) })
   if (t?.kept) current = t.median

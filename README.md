@@ -1,16 +1,52 @@
 # agents-dak
 
-A multi-agent setup for Claude Code for developing, styling, fine-tuning and bug-hunting in any language.
+**devkit** is a Claude Code plugin with multi-agent workflows for developing, styling, fine-tuning and bug-hunting in any language. You install it once and it's available in every project.
 
-It is built on the idea from the "one head, one backpack" video. A single agent reads a big codebase into one context window and stops after it finds a dozen bugs. A **dynamic workflow** turns the plan into a program instead:
+## Install (one command)
 
-- many agents each hunt in their own slice,
-- skeptic agents then try to **prove each finding wrong**,
-- only the findings that survive get reported or fixed.
+Run this in any Claude Code chat (CLI, desktop, IDE or web):
+
+```text
+/plugin install devkit --marketplace MrNinjaWolf/agents-dak
+```
+
+On Claude Code versions older than 2.1.275, use two steps:
+
+```text
+/plugin marketplace add MrNinjaWolf/agents-dak
+/plugin install devkit@agents-dak
+```
+
+That's it. Every session now has the `/devkit:*` commands, the six agents, and the `devkit` toolchain helper. To get updates, open `/plugin`, go to Marketplaces, choose agents-dak, then Update. You can also turn on auto-update there.
+
+### Make it automatic for everyone on a project
+
+Commit this to the project's `.claude/settings.json`, for example in your web app's repo:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "agents-dak": { "source": { "source": "github", "repo": "MrNinjaWolf/agents-dak" } }
+  },
+  "enabledPlugins": {
+    "devkit@agents-dak": true
+  }
+}
+```
+
+When anyone opens that project in Claude Code and trusts the folder, they're asked to install the marketplace and plugin. Nobody has to remember the install command.
+
+## How it works
+
+The idea comes from the "one head, one backpack" video. A single agent stuffs a whole codebase into one context window and stops after a dozen bugs. A **dynamic workflow** turns the plan into a program instead:
+
+1. Many agents each hunt in their own slice of the code.
+2. Skeptic agents then try to **prove each finding wrong**.
+3. Only the findings that survive get reported or fixed.
 
 ```
             ┌────────── Map ──────────┐
-            │ toolchain.py slices     │
+            │      devkit slices      │
             └───────────┬─────────────┘
        ┌────────────────┼────────────────┐        Phase 1 · Hunt
   bug-hunter        bug-hunter       bug-hunter    (one per slice, ≤ N findings each)
@@ -23,132 +59,113 @@ It is built on the idea from the "one head, one backpack" video. A single agent 
                  fixer per file ──► report.md + result.json
 ```
 
-## What's inside
-
-| Path | What it is |
-| --- | --- |
-| `.claude/workflows/` | Five workflow scripts. Each one runs as a slash command. |
-| `.claude/agents/` | Six subagent roles that the workflows use (you can also call them directly). |
-| `scripts/toolchain.py` | One interface for format / lint / build / test in any language. It detects Python, JS/TS, Go, Rust, Java/Kotlin, C/C++, C#, Ruby and shell. |
-| `scripts/dry-run-workflow.mjs` | Runs a workflow with fake agents so you can test its logic without spending tokens. |
-| `scripts/score.py` + `playground/` | A small benchmark with planted bugs, for measuring how well `/bug-hunt` does. |
-| `CLAUDE.md` | Project rules that Claude reads at the start of every session. |
-
-## Workflows
-
-Run these inside Claude Code (CLI, desktop, IDE, or web) from the root of this repo. You can also copy `.claude/` and `scripts/` into another project and run them there.
+## Commands
 
 | Command | What it does | Example |
 | --- | --- | --- |
-| `/bug-hunt` | Map → Hunt → Verify → (Fix) → Report. Writes `reports/bug-hunt/result.json` and `report.md`. | `/bug-hunt src` · `Run /bug-hunt with path "api", perSlice 3, skeptics 2, fix true` |
-| `/fix-until-green` | Runs the checks, fixes failures in parallel (one agent per file), and repeats until everything passes or two rounds in a row make no progress. | `/fix-until-green` · `Run /fix-until-green with kind "test", path "services/billing"` |
-| `/style-sweep` | Infers your house style from configs and code, runs the formatters, sends a stylist to each slice, then re-runs the checks. Behavior doesn't change. | `/style-sweep src` · `Run /style-sweep with guide "prefer early returns"` |
-| `/tune` | Baseline benchmark → five proposers (algorithmic, allocation, I/O, concurrency, runtime) → ranks the proposals → applies them one at a time and keeps only measured wins. | `/tune src/parser.py` · `Run /tune with target "go/ratelimit", metric "allocations"` |
-| `/develop` | Three planners (minimal / robust / idiomatic) → merge → implement with tests → five reviewers → a skeptic per review issue → fix what survives → checks pass. | `/develop "add a --json flag to the export command"` |
+| `/devkit:bug-hunt` | Map → Hunt → Verify → (Fix) → Report. Writes `reports/bug-hunt/result.json` and `report.md`. | `/devkit:bug-hunt src` · `Run /devkit:bug-hunt with path "server", focus "auth and injection", fix true` |
+| `/devkit:fix-until-green` | Runs the checks, fixes failures in parallel (one agent per file), and repeats until everything passes or two rounds in a row make no progress. | `/devkit:fix-until-green` · `Run /devkit:fix-until-green with kind "test"` |
+| `/devkit:style-sweep` | Infers your house style, runs the formatters, sends a stylist to each slice, then re-checks. Behavior doesn't change. | `/devkit:style-sweep src` |
+| `/devkit:tune` | Baseline benchmark, five proposers (algorithmic, allocation, I/O, concurrency, runtime), a ranking step, then applies the proposals one at a time and keeps only measured wins. | `/devkit:tune src/parser.py` |
+| `/devkit:develop` | Three planners, a merged plan, implementation with tests, five reviewers, skeptics on the review issues, polish, then the checks pass. | `/devkit:develop "add a --json flag to export"` |
 
-**Options** (pass them in plain words; Claude turns them into `args`):
+**Options** (give them in plain words; Claude turns them into `args`):
 
-- `bug-hunt`: `path` (`.`), `perSlice` max findings per hunter (3), `skeptics` per finding (2), `maxLines` per slice (1500), `fix` (false), `focus` (e.g. "concurrency and auth"), `outDir`
+- `bug-hunt`: `path` (`.`), `perSlice` max findings per hunter (3), `skeptics` per finding (2), `maxLines` per slice (1500), `fix` (false), `focus`, `outDir`
 - `fix-until-green`: `path`, `kind` (`check` | `lint` | `test` | `build` | `format-check`), `maxRounds` (6), `lang`
 - `style-sweep`: `path`, `maxLines` (800), `guide`
 - `tune`: `target`, `metric` ("wall-clock time"), `angles`, `maxTries` (4)
 - `develop`: `task`, `path`, `reviewAngles`, `includeLow`
 
-While a workflow runs, open `/workflows` to watch each phase and agent. In that view, `p` pauses the run, `x` stops it, and `s` saves a script that Claude wrote for you into `.claude/workflows/`.
+While a workflow runs, open `/workflows` to watch each agent. In that view, `p` pauses the run and `x` stops it.
 
-### Ad-hoc workflows
+### Example: checking a web app for bugs
 
-For a one-off job you don't need a saved script. Start the prompt with `ultracode:` or say "use a workflow", and Claude writes one:
+Install dependencies first (`npm install`) so the skeptics can run tests and reproductions. Then hunt the backend and the frontend separately, each with its own focus:
 
 ```text
-ultracode: audit every route under src/routes/ for missing auth checks, and adversarially verify each finding
+Run /devkit:bug-hunt with path "server", focus "missing auth checks, SQL/NoSQL injection, unvalidated input, missing await, swallowed errors, race conditions"
+Run /devkit:bug-hunt with path "client/src", focus "XSS, stale state, effects with wrong dependencies, unhandled promise rejections, out-of-order fetches"
 ```
 
-To have Claude plan a workflow for every substantive task in a session, run `/effort ultracode`. This costs more tokens; turn it off with `/effort ultracode off`.
+`devkit detect .` reads the `lint`, `test`, `build`, `typecheck` and `format` scripts from your `package.json`. The bug hunt reads code; it doesn't click through the running site. For bugs that only show up in the browser, ask Claude to start the dev server and walk through your main flows with Playwright.
 
-## Using the agents directly
+## Agents
 
-You don't need a workflow to use the roles. Ask for one by name:
+You can ask for any of these by name, without running a workflow:
 
-- "Use the **skeptic** agent to check whether the null check in `cache.go:88` is really a bug."
-- "Have the **perf-tuner** benchmark `parse_rows` and propose changes, but don't apply them."
-- "Have the **reviewer** look at my diff from the security angle."
+- `devkit:bug-hunter`
+- `devkit:skeptic`
+- `devkit:fixer`
+- `devkit:stylist`
+- `devkit:perf-tuner`
+- `devkit:reviewer`
+
+For example: "Use the devkit:skeptic agent to check whether the null check in cache.go:88 is really a bug."
 
 ## Toolchain helper
 
+The plugin puts `devkit` on the Bash `PATH`, so you and the agents get one interface for every language:
+
 ```bash
-python3 scripts/toolchain.py detect .            # what languages, which commands
-python3 scripts/toolchain.py run check .         # format-check + lint + build + test
-python3 scripts/toolchain.py run test . --lang go
-python3 scripts/toolchain.py run format src      # apply formatters
-python3 scripts/toolchain.py slices . --max-lines 1500
+devkit detect .                  # languages, projects, commands (missing tools listed)
+devkit run check .               # format-check + lint + build + test, JSON result
+devkit run test . --lang go
+devkit run format src
+devkit slices . --max-lines 1500
 ```
 
-The helper only uses tools that are installed. Missing tools are listed under `missing_tools`. To support a new language or tool, extend `detect()` or `loose_cmds()` in the script. Every agent and workflow picks up the change automatically.
+It covers Python, JS/TS, Go, Rust, Java/Kotlin, C/C++, C#, Ruby and shell.
 
-## Try it on the benchmark
+## Benchmark
 
-`playground/` holds small Python, JavaScript and Go modules with 10 planted bugs. Their own tests pass, so the bugs are hidden.
+`playground/` has small Python, JavaScript and Go modules with 10 planted bugs. Their own tests pass, so the bugs are hidden. To try it, clone this repo, open it in Claude Code, then:
 
 ```text
-/bug-hunt playground
+/devkit:bug-hunt playground
 ```
 
 ```bash
 python3 scripts/score.py reports/bug-hunt/result.json
 ```
 
-To compare with one agent, ask a fresh session to "check playground/ for bugs" and score its list the same way. Reset after a run that used `fix: true` with `git checkout -- playground`.
+After a run with `fix true`, reset with `git checkout -- playground`.
 
-## Writing or changing workflows
+## Working on the plugin
 
-A workflow is plain JavaScript:
-
-- `agent(prompt, { agentType, schema, label, model, effort, isolation: 'worktree' })` starts one agent.
-- `pipeline(items, fn)` starts one agent per item.
-- `phase(title)` groups the agents that follow in the progress view.
-- `log(msg)` prints a line above the phases.
-- `args` holds the input.
-
-The runtime has a few rules: no `import`, no `Date.now()` or `Math.random()`, and `meta` has to be a literal and the first statement. Run `/workflow-authoring` in Claude Code to load the full reference.
-
-Test changes without spending tokens:
+| Path | What it is |
+| --- | --- |
+| `.claude-plugin/marketplace.json` | The marketplace catalog |
+| `plugins/devkit/workflows/` | Workflow scripts |
+| `plugins/devkit/agents/` | Agent roles |
+| `plugins/devkit/skills/devkit/` | Skill that teaches Claude when to use what |
+| `plugins/devkit/bin/devkit` | Toolchain helper (Python, stdlib only) |
+| `scripts/dry-run-workflow.mjs` | Runs a workflow with fake agents, so testing costs no tokens |
 
 ```bash
-node scripts/dry-run-workflow.mjs .claude/workflows/bug-hunt.js --args '{"path":"src","fix":true}'
-node scripts/dry-run-workflow.mjs .claude/workflows/fix-until-green.js --fixtures my-fixtures.json
+claude --plugin-dir plugins/devkit          # try local changes without reinstalling
+node scripts/dry-run-workflow.mjs plugins/devkit/workflows/bug-hunt.js --args '{"path":"src","fix":true}'
+claude plugin validate plugins/devkit && claude plugin validate .
 ```
 
-The dry run checks the runtime rules and runs the control flow with fake agents. Fake answers come from each agent's `schema`, or from a fixtures file that maps label substrings to responses.
+Bump `version` in `plugins/devkit/.claude-plugin/plugin.json` when you publish changes, so installed copies update.
 
-## Optional: fewer permission prompts
+### Fewer permission prompts (optional)
 
-Long runs ask for approval on every shell command the agents run. To pre-approve the safe helper commands, add these rules to `.claude/settings.json` (shared with the repo) or `.claude/settings.local.json` (just you):
+Add these rules to your user or project settings:
 
 ```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(python3 scripts/toolchain.py:*)",
-      "Bash(python3 scripts/score.py:*)",
-      "Bash(node scripts/dry-run-workflow.mjs:*)",
-      "Bash(git diff:*)",
-      "Bash(git status:*)",
-      "Bash(git log:*)"
-    ]
-  }
-}
+{ "permissions": { "allow": ["Bash(devkit:*)", "Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)"] } }
 ```
 
-Note that `toolchain.py run` executes the project's own scripts (`npm run test`, `make`, and so on). Only allow it in repos you trust. The first time a workflow launches, Claude Code asks for approval and offers "don't ask again" for that workflow.
+`devkit run` executes the project's own scripts (`npm run test`, `make`, and so on), so only allow it in repos you trust.
 
 ## Cost
 
-Workflows spawn many agents, so they use more tokens than a normal conversation. On a subscription plan, those tokens count toward your usage limits. Some ways to keep it down:
+Workflows spawn many agents, so they use more tokens than a normal chat. To keep costs down:
 
-- Try a workflow on one directory first.
+- Start with one folder.
 - Lower `perSlice` or `skeptics`.
 - Set `/config workflowSizeGuideline=small`.
-- Ask for a smaller model on the read-heavy stages.
 
-`/workflows` shows token usage per agent while a run is going.
+`/workflows` shows token use per agent while a run is going.

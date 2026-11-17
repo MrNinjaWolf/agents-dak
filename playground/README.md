@@ -5,7 +5,7 @@ Small Python, JavaScript and Go modules with bugs planted in them, a miniature v
 Run the hunt and score it:
 
 ```text
-/bug-hunt playground
+/devkit:bug-hunt playground
 ```
 
 ```bash

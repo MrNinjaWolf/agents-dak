@@ -1,0 +1,10 @@
+{
+  "name": "devkit",
+  "displayName": "Devkit: multi-agent dev workflows",
+  "version": "1.0.0",
+  "description": "Hunt bugs with parallel agents and skeptic verification, fix until green, restyle, performance-tune and develop features in any language",
+  "author": { "name": "MrNinjaWolf" },
+  "repository": "https://github.com/MrNinjaWolf/agents-dak",
+  "license": "MIT",
+  "keywords": ["bugs", "workflows", "multi-agent", "lint", "testing", "performance", "style"]
+}

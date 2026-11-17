@@ -2,7 +2,7 @@ export const meta = {
   name: 'fix-until-green',
   description: 'Run the project checks (format, lint, build, test) in any language, fix failures in parallel per file, and repeat until green or progress stalls',
   phases: [
-    { title: 'Check', detail: 'run scripts/toolchain.py and group failures by file' },
+    { title: 'Check', detail: 'run devkit and group failures by file' },
     { title: 'Fix', detail: 'one fixer per failing file, in parallel' },
     { title: 'Done', detail: 'final status' },
   ],
@@ -39,7 +39,7 @@ const STATUS = {
 
 const check = (round) =>
   agent(
-    `Run \`python3 scripts/toolchain.py run ${kind} ${root}${langFlag}\` from the repo root and read its JSON output.
+    `Run \`devkit run ${kind} ${root}${langFlag}\` from the repo root and read its JSON output.
 If it passes, return ok: true and no failures.
 Otherwise return one failure per file that needs changing (a failing test belongs to the source file it exercises when the test is correct).
 Copy the relevant error lines into details verbatim. Format-check failures go under the file the formatter named.
@@ -72,7 +72,7 @@ ${list.map((f) => `- [${f.kind}] ${f.summary}\n${(f.details ?? '').split('\n').m
 
 Formatting failures: run the project's formatter on the file instead of editing by hand.
 Never delete, skip or weaken a test to make it pass; fix the code under test. If the test is genuinely wrong, explain why in your report.`,
-      { agentType: 'fixer', label: `fix r${round}: ${target}` },
+      { agentType: 'devkit:fixer', label: `fix r${round}: ${target}` },
     ),
   )
 }
