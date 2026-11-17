@@ -2,7 +2,7 @@ export const meta = {
   name: 'bug-hunt',
   description: 'Split a codebase into slices, hunt bugs in parallel, have skeptics try to refute every finding, optionally fix the survivors, and write reports/bug-hunt/result.json',
   phases: [
-    { title: 'Map', detail: 'split the target into slices with scripts/toolchain.py' },
+    { title: 'Map', detail: 'split the target into slices with devkit' },
     { title: 'Hunt', detail: 'one hunter per slice, up to perSlice findings each' },
     { title: 'Verify', detail: 'skeptics per finding, told to prove it wrong' },
     { title: 'Fix', detail: 'only with fix: true, one fixer per file with confirmed bugs' },
@@ -72,7 +72,7 @@ const VERDICT = {
 // ---- Phase 1: Map ---------------------------------------------------------
 phase('Map')
 const mapped = await agent(
-  `Run \`python3 scripts/toolchain.py slices ${root} --max-lines ${maxLines}\` and return its slices.
+  `Run \`devkit slices ${root} --max-lines ${maxLines}\` and return its slices.
 Drop slices that contain only generated, vendored, minified, or fixture/data files. Keep test files only if they contain real logic.
 Return the file paths exactly as the script printed them (relative to ${root}). Do not read the files.`,
   { label: 'map slices', schema: SLICES, effort: 'low' },
@@ -90,7 +90,7 @@ ${s.files.map((f) => `- ${rel(f)}`).join('\n')}
 
 Report at most ${perSlice} findings: only the strongest real defects, ranked by impact. Zero findings is fine.
 Use repo-relative paths in "file".${focus}`,
-    { agentType: 'bug-hunter', label: `hunt: ${s.name}`, schema: FINDINGS },
+    { agentType: 'devkit:bug-hunter', label: `hunt: ${s.name}`, schema: FINDINGS },
   ),
 )
 
@@ -119,7 +119,7 @@ Hunter's evidence:
 ${f.evidence}
 
 Try to prove this claim wrong. If you cannot, try to reproduce it.`,
-    { agentType: 'skeptic', label: `skeptic: #${f.id}-${k + 1} ${f.file}`, schema: VERDICT },
+    { agentType: 'devkit:skeptic', label: `skeptic: #${f.id}-${k + 1} ${f.file}`, schema: VERDICT },
   ),
 )
 
@@ -148,7 +148,7 @@ if (opts.fix && confirmed.length > 0) {
     agent(
       `Fix these confirmed bugs in ${file}. Only edit ${file} and its tests.
 ${list.map((f) => `- #${f.id} line ${f.line}: ${f.title}\n  evidence: ${f.evidence}\n  hint: ${f.fix_hint ?? 'n/a'}\n  skeptic reproduction: ${f.verdicts.find((v) => v.reproduction)?.reproduction ?? 'n/a'}`).join('\n')}`,
-      { agentType: 'fixer', label: `fix: ${file}` },
+      { agentType: 'devkit:fixer', label: `fix: ${file}` },
     ),
   )
 }

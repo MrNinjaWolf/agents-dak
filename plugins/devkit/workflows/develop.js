@@ -63,7 +63,7 @@ const angles = [
 const plans = await pipeline(angles, (angle) =>
   agent(
     `Task: ${task}
-Project root: ${root}. Run \`python3 scripts/toolchain.py detect ${root}\` to see languages and commands.
+Project root: ${root}. Run \`devkit detect ${root}\` to see languages and commands.
 Plan the implementation from this angle: ${angle}.
 Read the relevant code first. Name concrete files, functions and tests. Don't edit anything.`,
     { label: `plan: ${angle.split(':')[0]}`, schema: PLAN, disallowedTools: READ_ONLY },
@@ -91,7 +91,7 @@ Tests to add: ${plan.tests.join('; ')}
 Risks to handle: ${(plan.risks ?? []).join('; ') || 'none listed'}
 
 Match the surrounding code style. Write the tests with the project's existing framework. Run
-\`python3 scripts/toolchain.py run check ${root}\` and get it passing. Don't commit. Report the files you changed.`,
+\`devkit run check ${root}\` and get it passing. Don't commit. Report the files you changed.`,
   { label: 'implement' },
 )
 
@@ -101,7 +101,7 @@ const reviews = await pipeline(reviewAngles, (angle) =>
   agent(
     `Review the uncommitted change (\`git diff\` plus new untracked files from \`git status\`) made for the task "${task}".
 Your angle: ${angle}. Report at most 5 issues, only real ones.`,
-    { agentType: 'reviewer', label: `review: ${angle}`, schema: ISSUES },
+    { agentType: 'devkit:reviewer', label: `review: ${angle}`, schema: ISSUES },
   ),
 )
 const issues = reviews.flatMap((r, i) => (r?.issues ?? []).map((x) => ({ ...x, angle: reviewAngles[i] })))
@@ -113,7 +113,7 @@ const verdicts = await pipeline(issues, (x) =>
     `A ${x.angle} reviewer claims: ${x.problem}
 Location: ${x.file}:${x.line}. Suggested: ${x.suggestion ?? 'n/a'}
 This is about the uncommitted change for "${task}". Try to prove the claim wrong.`,
-    { agentType: 'skeptic', label: `skeptic: ${x.angle} ${x.file}:${x.line}`, schema: VERDICT },
+    { agentType: 'devkit:skeptic', label: `skeptic: ${x.angle} ${x.file}:${x.line}`, schema: VERDICT },
   ),
 )
 const confirmed = issues.filter((_, i) => verdicts[i]?.verdict === 'survived')
@@ -126,13 +126,13 @@ await pipeline([...byFile.entries()], ([file, list]) =>
   agent(
     `Address these confirmed review issues in ${file}:
 ${list.map((x) => `- [${x.angle}/${x.severity}] line ${x.line}: ${x.problem}${x.suggestion ? ` (suggestion: ${x.suggestion})` : ''}`).join('\n')}`,
-    { agentType: 'fixer', label: `polish: ${file}` },
+    { agentType: 'devkit:fixer', label: `polish: ${file}` },
   ),
 )
 const final = await agent(
-  `Run \`python3 scripts/toolchain.py run check ${root}\`. If it fails because of the change for "${task}", fix it (up to 3 attempts).
+  `Run \`devkit run check ${root}\`. If it fails because of the change for "${task}", fix it (up to 3 attempts).
 Return a short summary: files changed (\`git status --short\`), tests added, and the final check status.`,
-  { agentType: 'fixer', label: 'final check' },
+  { agentType: 'devkit:fixer', label: 'final check' },
 )
 
 return { task, plan: plan.summary, build: built, review_issues: issues.length, fixed: confirmed.map((x) => `${x.file}:${x.line} ${x.problem}`), final }

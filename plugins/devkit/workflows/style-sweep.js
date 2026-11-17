@@ -29,7 +29,7 @@ Return only the guide. Don't change files.`,
 
 phase('Format')
 await agent(
-  `Run \`python3 scripts/toolchain.py run format ${root}\`. If a formatter is missing, skip it and say which.
+  `Run \`devkit run format ${root}\`. If a formatter is missing, skip it and say which.
 Then run \`git diff --stat\` and report which files the formatters touched. Don't make any manual edits.`,
   { label: 'run formatters', effort: 'low' },
 )
@@ -40,7 +40,7 @@ const SLICES = {
   properties: { slices: { type: 'array', items: { type: 'object', required: ['name', 'files'], properties: { name: { type: 'string' }, files: { type: 'array', items: { type: 'string' } } } } } },
 }
 const mapped = await agent(
-  `Run \`python3 scripts/toolchain.py slices ${root} --max-lines ${maxLines}\` and return its slices unchanged, minus generated/vendored files.`,
+  `Run \`devkit slices ${root} --max-lines ${maxLines}\` and return its slices unchanged, minus generated/vendored files.`,
   { label: 'map slices', schema: SLICES, effort: 'low' },
 )
 const slices = mapped?.slices ?? []
@@ -53,15 +53,15 @@ ${s.files.map((f) => `- ${rel(f)}`).join('\n')}
 
 House style:
 ${guide ?? '(none found: follow the language standard style)'}`,
-    { agentType: 'stylist', label: `style: ${s.name}` },
+    { agentType: 'devkit:stylist', label: `style: ${s.name}` },
   ),
 )
 
 phase('Verify')
 const verify = await agent(
-  `Run \`python3 scripts/toolchain.py run check ${root}\`. If anything fails that the restyle could have caused (see \`git diff\`),
+  `Run \`devkit run check ${root}\`. If anything fails that the restyle could have caused (see \`git diff\`),
 fix it with the smallest edit or revert that hunk. Report the final check status and any failures that were already there before.`,
-  { agentType: 'fixer', label: 'verify checks' },
+  { agentType: 'devkit:fixer', label: 'verify checks' },
 )
 
 return { slices: slices.length, stylists_done: reports.filter(Boolean).length, verify }

@@ -6,10 +6,10 @@ for formatting, linting, testing and building, so agents never have to guess
 which tools a repo uses.
 
 Usage:
-  python3 scripts/toolchain.py detect [PATH]                 # JSON: projects + commands
-  python3 scripts/toolchain.py run KIND [PATH] [--lang L]    # KIND: format|format-check|lint|test|build|check
-  python3 scripts/toolchain.py files [PATH]                  # JSON: source files with line counts
-  python3 scripts/toolchain.py slices [PATH] [--max-lines N] # JSON: files grouped into hunt slices
+  devkit detect [PATH]                 # JSON: projects + commands
+  devkit run KIND [PATH] [--lang L]    # KIND: format|format-check|lint|test|build|check
+  devkit files [PATH]                  # JSON: source files with line counts
+  devkit slices [PATH] [--max-lines N] # JSON: files grouped into hunt slices
 
 `check` runs format-check, lint, build and test in that order.
 Exit code of `run` is 0 only if every command passed. Only stdlib is used.

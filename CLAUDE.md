@@ -1,30 +1,44 @@
 # agents-dak
 
-A multi-agent setup for developing, styling, tuning and bug-hunting in any language with Claude Code.
+This repo is a Claude Code **plugin marketplace**. Its only plugin is `devkit`, a set of multi-agent workflows for developing, styling, tuning and bug-hunting in any language.
 
-## Toolchain: always go through `scripts/toolchain.py`
+## Layout
 
-Don't guess a project's commands. Use:
+- `.claude-plugin/marketplace.json`: the marketplace catalog.
+- `plugins/devkit/`: the plugin itself.
+  - `agents/`: six agents. They load as `devkit:<name>`.
+  - `workflows/`: five workflows. They run as `/devkit:<name>`.
+  - `skills/devkit/SKILL.md`
+  - `bin/devkit`: the toolchain helper. It is on the Bash `PATH` while the plugin is enabled.
+- `scripts/dry-run-workflow.mjs`: tests a workflow with fake agents.
+- `scripts/score.py` and `playground/`: the bug-hunt benchmark.
 
-- `python3 scripts/toolchain.py detect <dir>`: languages, projects and their format/lint/build/test commands
-- `python3 scripts/toolchain.py run <format|format-check|lint|build|test|check> <dir> [--lang L]`: run them; JSON result, exit 0 only if all pass
-- `python3 scripts/toolchain.py slices <dir> --max-lines N`: split source files into chunks for parallel agents
+## Toolchain: always go through `devkit`
 
-If a language isn't detected, add it to `detect()` / `loose_cmds()` in that script instead of hard-coding commands elsewhere.
+Don't guess a project's commands. Use these:
 
-## Agents (`.claude/agents/`)
+- `devkit detect <dir>`: lists the languages and projects, with their format, lint, build and test commands.
+- `devkit run <format|format-check|lint|build|test|check> <dir> [--lang L]`: runs those commands and prints a JSON result. It exits 0 only if everything passed.
+- `devkit slices <dir> --max-lines N`: splits the source files into chunks for parallel agents.
 
-`bug-hunter`, `skeptic`, `fixer`, `stylist`, `perf-tuner`, `reviewer`. Read-only roles (`bug-hunter`, `skeptic`, `reviewer`) must never edit project files; they may write scratch files under `/tmp`.
+If you work in this repo without the plugin installed, run `plugins/devkit/bin/devkit` instead. If a language isn't detected, add it to `detect()` or `loose_cmds()` in that file. Don't hard-code commands anywhere else.
 
-## Workflows (`.claude/workflows/`)
+## Editing agents and workflows
 
-`/bug-hunt`, `/fix-until-green`, `/style-sweep`, `/tune`, `/develop`. Rules for editing them:
-
-- `export const meta = {...}` stays the first statement and a plain literal; every `phase('X')` title has an entry in `meta.phases`.
-- No `import`, `Date.now()`, `Math.random()` or `new Date()` in scripts. Pass time-dependent values in through `args`.
-- After any edit, run `node scripts/dry-run-workflow.mjs .claude/workflows/<name>.js` (fake agents, no tokens) and keep it passing.
+- In workflows, refer to agents by their namespaced name, e.g. `agentType: 'devkit:skeptic'`.
+- Read-only roles (`bug-hunter`, `skeptic`, `reviewer`) never edit project files. They may write scratch files under `/tmp`.
+- `export const meta = {...}` stays the first statement, written as a plain literal. Every `phase('X')` title needs an entry in `meta.phases`.
+- Scripts can't use `import`, `Date.now()`, `Math.random()` or `new Date()`.
+- After any workflow edit, run `node scripts/dry-run-workflow.mjs plugins/devkit/workflows/<name>.js` and keep it passing.
+- After any plugin change, run `claude plugin validate plugins/devkit` and `claude plugin validate .`, then bump `version` in `plugin.json` so installed copies update.
 - Claims from hunters and reviewers go through skeptics before anything is fixed or reported.
 
 ## Playground
 
-`playground/` contains code with **deliberately planted bugs**. It is the benchmark for `/bug-hunt`. Don't fix those bugs, add comments that point at them, or decode `scripts/.planted_key` unless the user explicitly asks. Score a run with `python3 scripts/score.py reports/bug-hunt/result.json`.
+`playground/` contains code with **deliberately planted bugs**. It is the benchmark for `/devkit:bug-hunt`. Unless the user explicitly asks, don't:
+
+- fix those bugs,
+- add comments that point at them,
+- decode `scripts/.planted_key`.
+
+Score a run with `python3 scripts/score.py reports/bug-hunt/result.json`.
