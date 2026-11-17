@@ -1,0 +1,53 @@
+{
+  "root": "playground",
+  "settings": {
+    "perSlice": 3,
+    "skeptics": 2,
+    "maxLines": 1500,
+    "fix": false
+  },
+  "slices": 1,
+  "claimed": 3,
+  "confirmed": [
+    {
+      "id": 1,
+      "file": "playground/go/ratelimit.go",
+      "line": 45,
+      "title": "Sliding-window filter is inverted: it keeps expired events and drops in-window ones, so the limiter never limits",
+      "severity": "critical",
+      "category": "logic-error",
+      "evidence": "`if t.Before(cutoff) { kept = append(kept, t) }` keeps only events older than now-Window; New(2, time.Minute) allows 10 of 10 calls at the same instant.",
+      "fix_hint": "Keep events with `!t.Before(cutoff)` (or `t.After(cutoff)`).",
+      "status": "confirmed",
+      "reproduction": "Scratch copy + in-package test with fixed clock: New(2, time.Minute), 10x Allow(\"a\") -> 'same-instant allowed=10 of 10 (limit 2)'."
+    },
+    {
+      "id": 2,
+      "file": "playground/js/queue.js",
+      "line": 51,
+      "title": "drain() uses forEach(async) and returns before any job finishes, so it always returns 0",
+      "severity": "high",
+      "category": "async/unawaited-promise",
+      "evidence": "`batch.forEach(async (job) => { if (await this.runOne(job)) ok += 1; }); return ok;` forEach discards the promises; drain resolves to 0 and async jobs complete afterwards.",
+      "fix_hint": "`for (const job of batch) { if (await this.runOne(job)) ok += 1; }`",
+      "status": "confirmed",
+      "reproduction": "3 async jobs (10ms): `await q.drain()` -> 0, completed 0; after 50ms completed 3. Sync jobs: drain still returns 0."
+    },
+    {
+      "id": 3,
+      "file": "playground/python/inventory.py",
+      "line": 27,
+      "title": "Mutable default `tags=[]` is shared and mutated, so tags leak between items",
+      "severity": "medium",
+      "category": "mutable-default",
+      "evidence": "`def add(..., tags=[])` then `tags.append(\"new\")`; every add() without tags shares one list, across Inventory instances, and caller lists are mutated.",
+      "fix_hint": "`tags=None`; `tags = list(tags or []) + [\"new\"]`",
+      "status": "confirmed",
+      "reproduction": "inv.add('a',...), inv.add('b',...) -> ['new','new'] ['new','new'] True; fresh Inventory add -> ['new','new','new']; caller list ['x'] -> ['x','new']."
+    }
+  ],
+  "disputed": [],
+  "refuted": [],
+  "unverified": [],
+  "fixes": []
+}
