@@ -1,0 +1,10 @@
+{
+  "name": "betting-desk",
+  "displayName": "Betting desk: six-agent sports research and betting panel",
+  "version": "1.0.0",
+  "description": "A lead, two researchers, a bet scout and two skeptics research a sports topic, propose bets, try to veto them, and the lead makes the final call",
+  "author": { "name": "MrNinjaWolf" },
+  "repository": "https://github.com/MrNinjaWolf/agents-dak",
+  "license": "MIT",
+  "keywords": ["sports", "betting", "research", "multi-agent", "skeptic"]
+}
