@@ -124,6 +124,40 @@ You can ask for any of these by name, without running a workflow:
 
 For example: "Use the devkit:skeptic agent to check whether the null check in cache.go:88 is really a bug."
 
+## Betting desk plugin
+
+The marketplace also has **betting-desk**, a six-agent panel for sports betting research. Install it the same way (`/plugin install betting-desk --marketplace MrNinjaWolf/agents-dak`), then run:
+
+```text
+/betting-desk:bet "Lakers vs Celtics tonight"
+Run /betting-desk:bet with topic "NFL week 12 totals", maxBets 3, maxStake 1, books "DraftKings, FanDuel"
+```
+
+| # | Agent | Role |
+| --- | --- | --- |
+| 1 | `betting-desk:lead` | Makes every final decision: approve or reject, stake in units, worst price to accept |
+| 2 | `betting-desk:skeptic` | Tries to veto every proposed bet, then second-guesses the lead's decisions |
+| 3 | `betting-desk:researcher` | Primary research on your topic: context, injuries, form, matchups, odds, news |
+| 4 | `betting-desk:bet-scout` | Finds bets with an edge in agent 3's research |
+| 5 | `betting-desk:second-researcher` | Independent research from different sources, used to cross-check |
+| 6 | `betting-desk:research-skeptic` | Fact-checks both researchers before anyone bets on their claims |
+
+```
+   researcher (3) ──┬── second-researcher (5)       Research, in parallel
+                    ▼
+            research-skeptic (6)                    Fact-check both briefs
+                    ▼
+              bet-scout (4)                         Proposes bets from agent 3's research
+                    ▼
+        skeptic (2) on each bet                     Veto / downgrade / pass
+                    ▼
+                lead (1)  ◄──  skeptic (2)          Decide, get challenged, final call
+                    ▼
+     reports/betting-desk/<topic>.md
+```
+
+The workflow computes implied probability and edge from the American odds itself, caps stakes at `maxStake`, and treats "no bet" as a valid result. It is analysis, not a guarantee: bet only where it's legal and only what you can afford to lose.
+
 ## Toolchain helper
 
 The plugin ships `scripts/devkit`, which gives the agents one interface for every language: Python, JS/TS, Go, Rust, Java/Kotlin, C/C++, C#, Ruby and shell. The agents find it on their own. You can also just ask Claude, for example "run devkit check on this repo".

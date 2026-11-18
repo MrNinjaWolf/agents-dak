@@ -1,6 +1,6 @@
 # agents-dak
 
-This repo is a Claude Code **plugin marketplace**. Its only plugin is `devkit`, a set of multi-agent workflows for developing, styling, tuning and bug-hunting in any language.
+This repo is a Claude Code **plugin marketplace** with two plugins: `devkit`, a set of multi-agent workflows for developing, styling, tuning and bug-hunting in any language, and `betting-desk`, a six-agent sports betting research panel.
 
 ## Layout
 
@@ -12,6 +12,7 @@ This repo is a Claude Code **plugin marketplace**. Its only plugin is `devkit`, 
   - `scripts/devkit.py`: the toolchain helper.
   - `scripts/devkit` and `scripts/devkit.cmd`: launchers that find Python 3. Agents and the skill reach them through `${CLAUDE_PLUGIN_ROOT}/scripts/devkit`.
   - There is no top-level `bin/`: claude.ai rejects plugins that have one, so don't add it back.
+- `plugins/betting-desk/`: six agents (`lead`, `skeptic`, `researcher`, `bet-scout`, `second-researcher`, `research-skeptic`, loaded as `betting-desk:<name>`), the `bet` workflow (`/betting-desk:bet`) and a skill. Its workflow uses only its own agents and doesn't need the devkit helper.
 - `scripts/dry-run-workflow.mjs`: tests a workflow with fake agents.
 - `scripts/score.py` and `playground/`: the bug-hunt benchmark.
 
@@ -32,7 +33,7 @@ In this repo, run `plugins/devkit/scripts/devkit`. Every agent that workflows sp
 - `export const meta = {...}` stays the first statement, written as a plain literal. Every `phase('X')` title needs an entry in `meta.phases`.
 - Scripts can't use `import`, `Date.now()`, `Math.random()` or `new Date()`.
 - After any workflow edit, run `node scripts/dry-run-workflow.mjs plugins/devkit/workflows/<name>.js` and keep it passing.
-- After any plugin change, run `claude plugin validate plugins/devkit` and `claude plugin validate .`, then bump `version` in `plugin.json` so installed copies update.
+- After any plugin change, run `claude plugin validate plugins/<name>` and `claude plugin validate .`, then bump `version` in `plugin.json` so installed copies update.
 - Claims from hunters and reviewers go through skeptics before anything is fixed or reported.
 
 ## Playground

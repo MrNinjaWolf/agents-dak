@@ -1,6 +1,6 @@
 {
   "name": "agents-dak",
-  "description": "Multi-agent Claude Code workflows for bug hunting, fixing, styling, tuning and feature work in any language",
+  "description": "Multi-agent Claude Code workflows: dev tooling (bug hunting, fixing, styling, tuning, features) and a sports betting research desk",
   "owner": {
     "name": "MrNinjaWolf"
   },
@@ -9,6 +9,11 @@
       "name": "devkit",
       "source": "./plugins/devkit",
       "description": "Multi-agent workflows for bug hunting, fixing, styling, tuning and developing in any language"
+    },
+    {
+      "name": "betting-desk",
+      "source": "./plugins/betting-desk",
+      "description": "Six-agent sports betting desk: lead, two researchers, a bet scout and two skeptics"
     }
   ]
 }
